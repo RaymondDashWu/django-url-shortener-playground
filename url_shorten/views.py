@@ -28,13 +28,6 @@ def shorten_and_pass_data(request):
     form = None
     if request.method == "POST":
         create_shorten_obj(request)
-        # url_form = URL_Field(request.POST)
-        # if url_form.is_valid():
-        #     slug = create_slug()
-        #     url = url_form.cleaned_data['url']
-        #     new_url = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug, http_code = "TODO")
-        #     new_url.save()
-        #     # request.user.url_shorten.add(new_url)
         return HttpResponseRedirect('/url_shorten')
     else:
         form = URL_Field()

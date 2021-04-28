@@ -26,7 +26,7 @@ class URLShortenerUnitTests(TestCase):
         """
         Tests slug creation
         """
-        self.assertIs(len(create_slug()) > 1, True)
+        self.assertTrue(len(create_slug()) > 1)
 
     def test_slug_not_in_db(self): # TODO
         """
@@ -46,15 +46,15 @@ class URLShortenerUnitTests(TestCase):
         """
         request = RequestFactory().post('/', { 'url': 'www.google.com'})
         form = URL_Field(request.POST)
-        self.assertEqual(form.is_valid(), True)
+        self.assertTrue(form.is_valid())
 
         request = RequestFactory().post('/', { 'NOT_A_PARAM': 'www.google.com'})
         form = URL_Field(request.POST)
-        self.assertEqual(form.is_valid(), False)
+        self.assertFalse(form.is_valid())
 
         request = RequestFactory().post('/', { 'url': 'www.INVALID_URL'})
         form = URL_Field(request.POST)
-        self.assertEqual(form.is_valid(), False)
+        self.assertFalse(form.is_valid())
 
     def test_shorten(self):
         """
