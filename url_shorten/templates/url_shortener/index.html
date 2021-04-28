@@ -1,0 +1,13 @@
+<form method="POST">
+  {% csrf_token %}
+  {{form}}
+  {% comment %} <input type="text" id="fname" name="fname"> {% endcomment %}
+  <input type="submit" value="Submit">
+</form>
+
+{% comment %} PUll all shortened URLs {% endcomment %}
+{% if short_url %}
+  Here's your shortened URL: {{ short_url }}
+{% endif %}
+
+{% comment %} website/url_shorten/3 {% endcomment %}
