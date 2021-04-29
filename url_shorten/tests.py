@@ -32,13 +32,18 @@ class URLShortenerUnitTests(TestCase):
         """
         Tests to see if slug correctly checks that it's not in db
         """
-        pass
+        self.assertRaises(URLS.DoesNotExist, URLS.objects.get, shortened_slug="FAILTEST")
+
 
     def test_slug_in_db(self): # TODO
         """
         Tests to see if slug correctly checks when slug already in db
         """
-        pass
+        slug = "TESTTEST"
+        test_entry = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug, http_code = "TODO")
+        test_entry.save()
+        self.assertTrue(URLS.objects.get(shortened_slug=slug))
+
 
     def test_POST_url_form(self):
         """
