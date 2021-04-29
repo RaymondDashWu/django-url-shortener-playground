@@ -4,21 +4,11 @@ from urllib.parse import urlparse
 
 import time
 import datetime
+import inspect
 
 from .models import URLS
 from .views import create_shorten_obj, create_slug, shorten_and_pass_data
 from .forms import URL_Field
-
-# TODO tests shouldn't require network connections. Look up Django mocked network requests
-# tests for the first url in url_bank to return a 200. URL bank was picked based on various cloud hosting services in case one fails
-url_bank = ["www.google.com", "www.microsoft.com", "www.amazon.com", "www.ovh.com", "www.alibaba.com"]
-working_url = ""
-
-for url in url_bank:
-    response = Client().get(url)
-    if response.status_code == 200:
-        working_url = url
-        break
 
 class URLShortenerUnitTests(TestCase):
 
@@ -28,18 +18,19 @@ class URLShortenerUnitTests(TestCase):
         """
         self.assertTrue(len(create_slug()) > 1)
 
-    def test_slug_not_in_db(self): # TODO
+    def test_slug_not_in_db(self):
         """
         Tests to see if slug correctly checks that it's not in db
         """
         self.assertRaises(URLS.DoesNotExist, URLS.objects.get, shortened_slug="FAILTEST")
 
 
-    def test_slug_in_db(self): # TODO
+    def test_slug_in_db(self):
         """
         Tests to see if slug correctly checks when slug already in db
         """
-        slug = "TESTTEST"
+        slug = "PASSTEST"
+        url = "www.google.com"
         test_entry = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug, http_code = "TODO")
         test_entry.save()
         self.assertTrue(URLS.objects.get(shortened_slug=slug))
@@ -70,7 +61,7 @@ class URLShortenerUnitTests(TestCase):
         print("urls_obj", urls_obj)
         self.assertNotEqual(urls_obj.date_created, None) # TODO Look up library to freeze cpu time
         self.assertEqual(urls_obj.original_url, 'http://www.google.com')
-        self.assertEqual(len(urls_obj.shortened_slug), 8) # TODO 8 shouldn't be hardcoded
+        self.assertEqual(len(urls_obj.shortened_slug), inspect.getargspec(create_slug).defaults[0]) # NOTE getargspec used to get default parameters to function
         # self.assertEqual(urls_obj.http_code, ) # TODO not sustainable
 
     def test_url_redirect(self):
@@ -85,7 +76,12 @@ class URLShortenerUnitTests(TestCase):
         """
         Was a db entry created after user shortens URL?
         """
-        pass
+        current_db_size = len(URLS.objects.all())
+        slug = "PASSTEST"
+        url = "www.google.com"
+        test_entry = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug, http_code = "TODO")
+        test_entry.save()
+        self.assertEqual(len(URLS.objects.all()), current_db_size + 1)
 
     def test_simulated_server_down(self):
         """
