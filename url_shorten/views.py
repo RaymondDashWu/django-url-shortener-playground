@@ -8,8 +8,6 @@ import datetime
 from .forms import URL_Field
 from .models import URLS
 
-# def index(request):
-#     return render(request, 'url_shortener/index.html')
 def create_slug(length = 8):
     slug = random.choices(string.ascii_letters + string.digits, k = length)
     return "".join(slug)
@@ -40,16 +38,5 @@ def shorten_and_pass_data(request):
     return render(request, 'url_shortener/index.html', context)
 
 def url_redirect(request, slugs):
-    # TODO finds appropriate slug in db and returns redirect to original url
     data = URLS.objects.get(shortened_slug=slugs)
     return redirect(data.original_url)
-
-    # data = UrlData.objects.get(slug=slugs)
-    # return redirect(data.url)
-
-    # slug - lkajdljk
-    # original_url = google.com
-
-def temp_url(request):
-    # solely redirects to google.com
-    return redirect("https://www.google.com")

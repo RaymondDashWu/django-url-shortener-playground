@@ -4,7 +4,6 @@ class URLS(models.Model):
     date_created = models.DateTimeField('date published')
     original_url = models.CharField(max_length=65) # ¯\_(ツ)_/¯ Placeholder 65. Used b/c that was bit.ly's max
     shortened_slug = models.CharField(max_length=65)
-    http_code = models.CharField(max_length=3)
 
 # Equivalent to the following SQL
 # Command can be found here https://docs.djangoproject.com/en/3.1/intro/tutorial02/#activating-models

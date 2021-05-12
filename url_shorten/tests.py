@@ -23,7 +23,9 @@ class URLShortenerUnitTests(TestCase):
         Tests to see if slug correctly checks that it's not in db
         """
         self.assertRaises(URLS.DoesNotExist, URLS.objects.get, shortened_slug="FAILTEST")
-
+        # def test_urls_has_expected_attributes
+        # create new URLS object
+        # shortened slug in URLS obj = value initially provided
 
     def test_slug_in_db(self):
         """
@@ -33,8 +35,7 @@ class URLShortenerUnitTests(TestCase):
         url = "www.google.com"
         test_entry = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug, http_code = "TODO")
         test_entry.save()
-        self.assertTrue(URLS.objects.get(shortened_slug=slug))
-
+        self.assertEqual(URLS.objects.get(shortened_slug=slug), test_entry)
 
     def test_POST_url_form(self):
         """
@@ -58,13 +59,13 @@ class URLShortenerUnitTests(TestCase):
         """
         request = RequestFactory().post('/', { 'url': 'http://www.google.com'})
         urls_obj = create_shorten_obj(request)
-        print("urls_obj", urls_obj)
-        self.assertNotEqual(urls_obj.date_created, None) # TODO Look up library to freeze cpu time
-        self.assertEqual(urls_obj.original_url, 'http://www.google.com')
-        self.assertEqual(len(urls_obj.shortened_slug), inspect.getargspec(create_slug).defaults[0]) # NOTE getargspec used to get default parameters to function
-        # self.assertEqual(urls_obj.http_code, ) # TODO not sustainable
+        default_slug_len = inspect.getargspec(create_slug).defaults[0] # NOTE getargspec used to get default parameters to function
 
-    def test_url_redirect(self):
+        self.assertNotEqual(urls_obj.date_created, None) # TODO https://github.com/spulec/freezegun
+        self.assertEqual(urls_obj.original_url, 'http://www.google.com')
+        self.assertEqual(len(urls_obj.shortened_slug), default_slug_len) 
+
+    def test_url_redirect(self): # TODO move to integration test
         """
         Ensure that new instance of URL table was created
         """
@@ -108,13 +109,20 @@ class URLShortenerIntegrationTests(TestCase):
         self.assertEqual(mock_resp.status_code, 302)
         self.assertEqual(mock_resp.url, 'http://www.google.com')
 
-    def test_bad_output(self):
+    def test_bad_input(self):
         """
-        Does shortened URL break if given bad output?
-        Site doesn't exist - jlaksfjlksafjklasf.com
-        
+        Shortened URL should allow for bad input and still shorten
+        - Site doesn't exist
+        - improperly formatted url
         """
-        pass
-        # test_url = shorten("non_working_url")
-        # redirected_url = Client().get(test_url) # TODO Unsure if this is how you'd get the redirected url's status code
-        # self.assertEqual(Client().get(redirected_url).status_code, 400) 
+        request = RequestFactory().post('/', { 'url': 'http://www.jlaksfjlksafjklasf.com'})
+        urls_obj = create_shorten_obj(request)
+        mock_resp = Client().get('/url_shorten/{}'.format(urls_obj.shortened_slug))
+        self.assertEqual(mock_resp.status_code, 302)
+        self.assertEqual(mock_resp.url, 'http://www.jlaksfjlksafjklasf.com')
+
+        request = RequestFactory().post('/', { 'url': 'httpwjlaksfjlksafjklasf.com'})
+        urls_obj = create_shorten_obj(request)
+        mock_resp = Client().get('/url_shorten/{}'.format(urls_obj.shortened_slug))
+        self.assertEqual(mock_resp.url, 'http://httpwjlaksfjlksafjklasf.com')
+        self.assertEqual(mock_resp.status_code, 302)
