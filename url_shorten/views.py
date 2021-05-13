@@ -22,19 +22,23 @@ def create_shorten_obj(request):
         return new_url
 
 def shorten_and_pass_data(request):
-    if request.method == "POST":
-        create_shorten_obj(request)
-        return HttpResponseRedirect('/url_shorten')
+    current_time = datetime.datetime.now()
+    while (datetime.datetime.now() - current_time).total_seconds() < 2: # checks if queries are taking longer than 2s
+        if request.method == "POST":
+            create_shorten_obj(request)
+            return HttpResponseRedirect('/url_shorten')
+        else:
+            form = URL_Field()
+        data = URLS.objects.all()
+        new_slug = URLS.objects.latest('date_created')
+        context = {
+            'form': form,
+            'data': data,
+            'new_slug': new_slug
+        }
+        return render(request, 'url_shortener/index.html', context)
     else:
-        form = URL_Field()
-    data = URLS.objects.all()
-    new_slug = URLS.objects.latest('date_created')
-    context = {
-        'form': form,
-        'data': data,
-        'new_slug': new_slug
-    }
-    return render(request, 'url_shortener/index.html', context)
+        return server_error(request)
 
 def url_redirect(request, slugs):
     data = URLS.objects.get(shortened_slug=slugs)

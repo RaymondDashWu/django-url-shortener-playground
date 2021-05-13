@@ -1,6 +1,7 @@
 # External libraries
 from django.test import RequestFactory, TestCase, Client
 from django.core.validators import URLValidator
+from django.views.defaults import server_error
 from urllib.parse import urlparse
 from freezegun import freeze_time
 
@@ -86,19 +87,6 @@ class URLShortenerUnitTests(TestCase):
         test_entry.save()
         self.assertEqual(len(URLS.objects.all()), current_db_size + 1)
 
-    def test_simulated_server_down(self):
-        """
-        Frontend should tell user if response takes longer than 2 seconds. 500 error
-        """
-        pass
-        # class DelayedShortener(URLS): # TODO this is wrong? Waits 5 seconds then activates?
-        #     def delayed_shorten(self, url):
-        #         time.sleep(5)
-        #         return shorten(url)
-
-        # test_url = DelayedShortener().delayed_shorten("www.google.com")        
-        # self.assertEqual(Client().get(test_url).status_code, 500)
-
 class URLShortenerIntegrationTests(TestCase):
     
     def test_shortened_url_works(self):
@@ -115,7 +103,7 @@ class URLShortenerIntegrationTests(TestCase):
         """
         Shortened URL should allow for bad input and still shorten
         - Site doesn't exist
-        - improperly formatted url
+        - improperly formatted url TODO shouldn't this be covered by previous?
         """
         request = RequestFactory().post('/', { 'url': 'http://www.jlaksfjlksafjklasf.com'})
         urls_obj = create_shorten_obj(request)
@@ -136,3 +124,33 @@ class URLShortenerIntegrationTests(TestCase):
         request = RequestFactory().post('/', { 'url': 'http://www.google.com'})
         urls_obj = shorten_and_pass_data(request)
         self.assertEqual(urls_obj.status_code, 302)
+
+    def test_simulated_server_down(self):
+        """
+        Frontend should tell user if response takes longer than 2 seconds. 500 error
+        """
+        from time import sleep
+        current_time = datetime.datetime.now()
+
+        def mock_shorten_and_pass_data(request):
+            sleep(3)
+            while (datetime.datetime.now() - current_time).total_seconds() < 2: # checks if queries are taking longer than 2s
+                if request.method == "POST":
+                    create_shorten_obj(request)
+                    return HttpResponseRedirect('/url_shorten')
+                else:
+                    form = URL_Field()
+                data = URLS.objects.all()
+                new_slug = URLS.objects.latest('date_created')
+                context = {
+                    'form': form,
+                    'data': data,
+                    'new_slug': new_slug
+                }
+                return render(request, 'url_shortener/index.html', context)
+            else:
+                return server_error(request)
+        
+        request = RequestFactory().post('/', { 'url': 'http://www.google.com'})
+        urls_obj = mock_shorten_and_pass_data(request)
+        self.assertEqual(urls_obj.status_code, 500)

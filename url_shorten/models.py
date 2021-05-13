@@ -16,6 +16,6 @@ class URLS(models.Model):
 # "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, # Automatically set by Django
 # "date_created" datetime NOT NULL,
 # "original_url" varchar(65) NOT NULL,
-# "shortened_url" varchar(65) NOT NULL,
+# "shortened_slug" varchar(65) NOT NULL,
 # 
 # COMMIT;
