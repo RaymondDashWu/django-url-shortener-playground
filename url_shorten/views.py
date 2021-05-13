@@ -22,18 +22,17 @@ def create_shorten_obj(request):
         return new_url
 
 def shorten_and_pass_data(request):
-    new_url = None
-    form = None
     if request.method == "POST":
         create_shorten_obj(request)
         return HttpResponseRedirect('/url_shorten')
     else:
         form = URL_Field()
     data = URLS.objects.all()
+    new_slug = URLS.objects.latest('date_created')
     context = {
         'form': form,
         'data': data,
-        'short_url': new_url
+        'new_slug': new_slug
     }
     return render(request, 'url_shortener/index.html', context)
 

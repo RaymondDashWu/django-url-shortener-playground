@@ -47,11 +47,17 @@ class URLShortenerUnitTests(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_POST_url_form_bad_key(self):
+        """
+        Request should not be valid because wrong param is used
+        """
         request = RequestFactory().post('/', { 'NOT_A_PARAM': 'www.google.com'})
         form = URL_Field(request.POST)
         self.assertFalse(form.is_valid())
 
     def test_POST_url_form_bad_value(self):
+        """
+        Request should not be valid because URL is invalid
+        """
         request = RequestFactory().post('/', { 'url': 'www.INVALID_URL'})
         form = URL_Field(request.POST)
         self.assertFalse(form.is_valid())

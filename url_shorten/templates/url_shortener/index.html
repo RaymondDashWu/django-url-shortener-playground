@@ -1,13 +1,15 @@
 <form method="POST">
   {% csrf_token %}
   {{form}}
-  {% comment %} <input type="text" id="fname" name="fname"> {% endcomment %}
   <input type="submit" value="Submit">
 </form>
 
-{% comment %} PUll all shortened URLs {% endcomment %}
-{% if short_url %}
-  Here's your shortened URL: {{ short_url }}
+{% if new_slug %}
+  Here's your shortened URL: <a href="/url_shorten/{{ new_slug.shortened_slug }}">Link</a>
 {% endif %}
 
-{% comment %} website/url_shorten/3 {% endcomment %}
+{% for d in data %}
+    <div>
+    <a href="/url_shorten/{{ d.shortened_slug }}">ThisIsSuchAShortURLNowIsntIt.com./{{ d.shortened_slug }}</a>
+    </div>
+{% endfor %}
