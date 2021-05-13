@@ -17,6 +17,5 @@ class URLS(models.Model):
 # "date_created" datetime NOT NULL,
 # "original_url" varchar(65) NOT NULL,
 # "shortened_url" varchar(65) NOT NULL,
-# "http_code" varchar(3) NOT NULL);
 # 
 # COMMIT;

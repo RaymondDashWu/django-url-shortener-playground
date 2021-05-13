@@ -17,7 +17,7 @@ def create_shorten_obj(request):
     if url_form.is_valid():
         slug = create_slug()
         url = url_form.cleaned_data['url']
-        new_url = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug, http_code = "TODO")
+        new_url = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug)
         new_url.save()
         return new_url
 

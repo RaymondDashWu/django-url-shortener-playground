@@ -33,7 +33,7 @@ class URLShortenerUnitTests(TestCase):
         """
         slug = "PASSTEST"
         url = "www.google.com"
-        test_entry = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug, http_code = "TODO")
+        test_entry = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug)
         test_entry.save()
         self.assertEqual(URLS.objects.get(shortened_slug=slug), test_entry)
 
@@ -45,10 +45,12 @@ class URLShortenerUnitTests(TestCase):
         form = URL_Field(request.POST)
         self.assertTrue(form.is_valid())
 
+    def test_POST_url_form_bad_key(self):
         request = RequestFactory().post('/', { 'NOT_A_PARAM': 'www.google.com'})
         form = URL_Field(request.POST)
         self.assertFalse(form.is_valid())
 
+    def test_POST_url_form_bad_value(self):
         request = RequestFactory().post('/', { 'url': 'www.INVALID_URL'})
         form = URL_Field(request.POST)
         self.assertFalse(form.is_valid())
@@ -65,14 +67,6 @@ class URLShortenerUnitTests(TestCase):
         self.assertEqual(urls_obj.original_url, 'http://www.google.com')
         self.assertEqual(len(urls_obj.shortened_slug), default_slug_len) 
 
-    def test_url_redirect(self): # TODO move to integration test
-        """
-        Ensure that new instance of URL table was created
-        """
-        request = RequestFactory().post('/', { 'url': 'http://www.google.com'})
-        urls_obj = shorten_and_pass_data(request)
-        self.assertEqual(urls_obj.status_code, 302)
-
     def test_was_db_entry_created(self):
         """
         Was a db entry created after user shortens URL?
@@ -80,7 +74,7 @@ class URLShortenerUnitTests(TestCase):
         current_db_size = len(URLS.objects.all())
         slug = "PASSTEST"
         url = "www.google.com"
-        test_entry = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug, http_code = "TODO")
+        test_entry = URLS(date_created = datetime.datetime.now(), original_url = url, shortened_slug = slug)
         test_entry.save()
         self.assertEqual(len(URLS.objects.all()), current_db_size + 1)
 
@@ -126,3 +120,11 @@ class URLShortenerIntegrationTests(TestCase):
         mock_resp = Client().get('/url_shorten/{}'.format(urls_obj.shortened_slug))
         self.assertEqual(mock_resp.url, 'http://httpwjlaksfjlksafjklasf.com')
         self.assertEqual(mock_resp.status_code, 302)
+
+    def test_url_redirect(self):
+        """
+        Ensure that new instance of URL table was created
+        """
+        request = RequestFactory().post('/', { 'url': 'http://www.google.com'})
+        urls_obj = shorten_and_pass_data(request)
+        self.assertEqual(urls_obj.status_code, 302)
