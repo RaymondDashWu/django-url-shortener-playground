@@ -1,11 +1,15 @@
+# External libraries
 from django.test import RequestFactory, TestCase, Client
 from django.core.validators import URLValidator
 from urllib.parse import urlparse
+from freezegun import freeze_time
 
+# Default libraries
 import time
 import datetime
 import inspect
 
+# Internal files
 from .models import URLS
 from .views import create_shorten_obj, create_slug, shorten_and_pass_data
 from .forms import URL_Field
@@ -23,9 +27,6 @@ class URLShortenerUnitTests(TestCase):
         Tests to see if slug correctly checks that it's not in db
         """
         self.assertRaises(URLS.DoesNotExist, URLS.objects.get, shortened_slug="FAILTEST")
-        # def test_urls_has_expected_attributes
-        # create new URLS object
-        # shortened slug in URLS obj = value initially provided
 
     def test_slug_in_db(self):
         """
@@ -55,6 +56,7 @@ class URLShortenerUnitTests(TestCase):
         form = URL_Field(request.POST)
         self.assertFalse(form.is_valid())
 
+    @freeze_time("2021-05-12")
     def test_shorten(self):
         """
         Tests that shorten() creates a valid object
@@ -63,7 +65,7 @@ class URLShortenerUnitTests(TestCase):
         urls_obj = create_shorten_obj(request)
         default_slug_len = inspect.getargspec(create_slug).defaults[0] # NOTE getargspec used to get default parameters to function
 
-        self.assertNotEqual(urls_obj.date_created, None) # TODO https://github.com/spulec/freezegun
+        self.assertEqual(urls_obj.date_created, datetime.datetime.now()) # NOTE datetime is mocked w/ freezegun
         self.assertEqual(urls_obj.original_url, 'http://www.google.com')
         self.assertEqual(len(urls_obj.shortened_slug), default_slug_len) 
 
