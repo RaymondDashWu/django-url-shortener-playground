@@ -1,8 +1,6 @@
 # External libraries
 from django.test import RequestFactory, TestCase, Client
-from django.core.validators import URLValidator
 from django.views.defaults import server_error
-from urllib.parse import urlparse
 from freezegun import freeze_time
 
 # Default libraries
@@ -132,8 +130,11 @@ class URLShortenerIntegrationTests(TestCase):
         from time import sleep
         current_time = datetime.datetime.now()
 
-        def mock_shorten_and_pass_data(request):
+        def mock_shorten_and_pass_data(request): 
+            # NOTE This is not ideal to copy/paste the function. Couldn't figure out how to do this 
+            # functionality without changing my code to match the test
             sleep(3)
+            # shorten_and_pass_data(request)
             while (datetime.datetime.now() - current_time).total_seconds() < 2: # checks if queries are taking longer than 2s
                 if request.method == "POST":
                     create_shorten_obj(request)

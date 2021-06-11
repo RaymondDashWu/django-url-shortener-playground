@@ -22,6 +22,19 @@ def create_shorten_obj(request):
         new_url.save()
         return new_url
 
+def render_homepage(request, form): 
+    """
+    GET request from db to gather all shortened URLs + render homepage
+    """
+    data = URLS.objects.all()
+    new_slug = URLS.objects.latest('date_created')
+    context = {
+        'form': form,
+        'data': data,
+        'new_slug': new_slug
+    }
+    return render(request, 'url_shortener/index.html', context)
+
 def shorten_and_pass_data(request):
     current_time = datetime.datetime.now()
     while (datetime.datetime.now() - current_time).total_seconds() < 2: # checks if queries are taking longer than 2s
@@ -30,14 +43,7 @@ def shorten_and_pass_data(request):
             return HttpResponseRedirect('/url_shorten')
         else:
             form = URL_Field()
-        data = URLS.objects.all()
-        new_slug = URLS.objects.latest('date_created')
-        context = {
-            'form': form,
-            'data': data,
-            'new_slug': new_slug
-        }
-        return render(request, 'url_shortener/index.html', context)
+        return render_homepage(request, form)
     else:
         return server_error(request)
 
